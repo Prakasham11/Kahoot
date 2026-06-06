@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizMaster Live - Kahoot Style</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Segoe UI,sans-serif;background:linear-gradient(-45deg,#ff006e,#8338ec,#3a86ff,#06d6a0);background-size:400% 400%;animation:bg 15s ease infinite;color:#fff;min-height:100vh}
+@keyframes bg{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
+.screen{display:none;padding:20px}
+.active{display:block}
+.card{max-width:1100px;margin:auto;background:rgba(255,255,255,.12);backdrop-filter:blur(12px);padding:25px;border-radius:24px}
+h1,h2{text-align:center;margin:10px 0}
+.center{text-align:center}
+input,select{padding:12px;border:none;border-radius:10px;margin:5px;width:280px}
+button{padding:12px 20px;border:none;border-radius:10px;cursor:pointer;font-weight:bold}
+.primary{background:#ffbe0b}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:20px}
+.answer{height:120px;font-size:1.2rem;color:white}
+.red{background:#e63946}.blue{background:#3a86ff}.yellow{background:#ffbe0b;color:#000}.green{background:#06d6a0}
+.timer{font-size:3rem;text-align:center;margin:15px}
+.lb li{list-style:none;padding:10px;margin:8px;background:rgba(255,255,255,.15);border-radius:12px}
+.podium{display:flex;justify-content:center;gap:20px;margin-top:30px}
+.place{padding:25px;background:rgba(255,255,255,.15);border-radius:15px}
+</style>
+</head>
+<body>
+
+<div id="home" class="screen active">
+<div class="card center">
+<h1>🎯 QuizMaster Live</h1>
+<p>Kahoot-style single page application</p><br>
+<button class="primary" onclick="show('host')">Host Quiz</button>
+<button class="primary" onclick="show('join')">Join Quiz</button>
+</div>
+</div>
+
+<div id="host" class="screen">
+<div class="card center">
+<h2>Host Dashboard</h2>
+<p>Room PIN</p>
+<h1 id="pin"></h1>
+<button class="primary" onclick="startQuiz()">Start Quiz</button>
+<button onclick="show('home')">Back</button>
+</div>
+</div>
+
+<div id="join" class="screen">
+<div class="card center">
+<h2>Join Quiz</h2>
+<input id="playerName" placeholder="Nickname"><br>
+<input id="roomPin" placeholder="PIN"><br>
+<button class="primary" onclick="joinQuiz()">Join</button>
+</div>
+</div>
+
+<div id="quiz" class="screen">
+<div class="card">
+<div class="timer" id="timer">20</div>
+<h2 id="question"></h2>
+<div class="answers" id="answers"></div>
+</div>
+</div>
+
+<div id="leaderboard" class="screen">
+<div class="card">
+<h2>🏆 Leaderboard</h2>
+<ul id="lb" class="lb"></ul>
+<button class="primary" onclick="showPodium()">Show Podium</button>
+</div>
+</div>
+
+<div id="podium" class="screen">
+<div class="card">
+<h2>🥇 Final Winners</h2>
+<div class="podium">
+<div class="place">🥈 Second</div>
+<div class="place">🥇 First</div>
+<div class="place">🥉 Third</div>
+</div>
+</div>
+</div>
+
+<script>
+let quiz=[
+{q:"What is AWS?",o:["Cloud","Database","Language","OS"],a:0},
+{q:"Capital of India?",o:["Delhi","Mumbai","Chennai","Kolkata"],a:0},
+{q:"2+2=?",o:["3","4","5","6"],a:1}
+];
+let current=0,t=20,score=0;
+
+function show(id){
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+}
+
+document.getElementById("pin").innerText=Math.floor(100000+Math.random()*900000);
+
+function joinQuiz(){
+show("quiz");
+loadQuestion();
+}
+
+function startQuiz(){
+show("quiz");
+loadQuestion();
+}
+
+function loadQuestion(){
+if(current>=quiz.length){showLeaderboard();return;}
+let q=quiz[current];
+document.getElementById("question").innerText=q.q;
+let a=document.getElementById("answers");
+a.innerHTML="";
+q.o.forEach((opt,i)=>{
+let b=document.createElement("button");
+b.className="answer "+["red","blue","yellow","green"][i];
+b.innerText=opt;
+b.onclick=()=>answer(i);
+a.appendChild(b);
+});
+startTimer();
+}
+
+function startTimer(){
+clearInterval(window.intv);
+t=20;
+timer.innerText=t;
+window.intv=setInterval(()=>{
+t--;
+timer.innerText=t;
+if(t<=0){clearInterval(window.intv);nextQ();}
+},1000);
+}
+
+function answer(i){
+clearInterval(window.intv);
+if(i===quiz[current].a) score+=1000+(t*50);
+nextQ();
+}
+
+function nextQ(){current++;loadQuestion();}
+
+function showLeaderboard(){
+show("leaderboard");
+let lb=document.getElementById("lb");
+lb.innerHTML=`<li>Player : ${document.getElementById('playerName').value||'Guest'} - ${score} pts</li>`;
+}
+
+function showPodium(){show("podium");}
+</script>
+
+<!-- Firebase Integration Placeholder
+Add Firebase SDK and replace local quiz logic with Realtime Database listeners.
+Deploy this file directly to GitHub Pages.
+-->
+</body>
+</html>
